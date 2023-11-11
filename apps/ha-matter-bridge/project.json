@@ -1,0 +1,57 @@
+{
+  "name": "ha-matter-bridge",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/ha-matter-bridge/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/ha-matter-bridge",
+        "main": "apps/ha-matter-bridge/src/main.ts",
+        "tsConfig": "apps/ha-matter-bridge/tsconfig.app.json",
+        "assets": ["apps/ha-matter-bridge/src/assets"],
+        "isolatedConfig": true,
+        "webpackConfig": "apps/ha-matter-bridge/webpack.config.js"
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "ha-matter-bridge:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "ha-matter-bridge:build:development"
+        },
+        "production": {
+          "buildTarget": "ha-matter-bridge:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/ha-matter-bridge/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/ha-matter-bridge/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}
