@@ -2,7 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
-    "module": "commonjs",
+//    "module": "commonjs",
+    "moduleResolution": "node16", // Required to support package.json exports
+    "module": "node16", // Required to make sure all imports are js
     "types": ["node"],
     "emitDecoratorMetadata": true,
     "target": "es2021"
