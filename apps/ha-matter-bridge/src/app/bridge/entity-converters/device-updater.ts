@@ -22,9 +22,13 @@ export class DeviceUpdater {
     this._internal = false;
   }
 
-  external(updateFn: () => void) {
+  external(updateFn: () => void | Promise<void>) {
     if (!this._internal) {
-      updateFn();
+      const result = updateFn();
+
+      if (result instanceof Promise) {
+          result.catch(e => this.logger.error(e))
+      }
     }
   }
 }

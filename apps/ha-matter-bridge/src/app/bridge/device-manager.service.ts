@@ -72,7 +72,7 @@ export class DeviceManager {
           // register new entity
           const converter = this.converterIntances.find(c => c.instance.canConvert(entity));
           if (converter) {
-            this.logger.log(`Registering converter for entity ${entity.entity_id} with converter ${converter.type.name}`);
+            this.logger.debug(`Registering converter for entity ${entity.entity_id} with converter ${converter.type.name}`);
 
             const unregister = new Subject<void>();
             const device = converter.instance.convert(
@@ -86,7 +86,7 @@ export class DeviceManager {
 
             const name = entity.attributes.friendly_name ?? entity.entity_id;
             const hash = getHashFromEntityId(entity.entity_id);
-            const serial = `nm-${uniqueId}-${hash}`; // max 32 characters
+            const serial = `hmb-${uniqueId}-${hash}`; // max 32 characters
             this.aggregator.addBridgedDevice(device, {
               nodeLabel: name,
               productName: name,

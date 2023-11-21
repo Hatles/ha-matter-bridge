@@ -7,7 +7,7 @@ import { Aggregator, DeviceTypes } from "@project-chip/matter-node.js/device";
 import { QrCode } from "@project-chip/matter-node.js/schema";
 import { StorageBackendDisk, StorageManager } from "@project-chip/matter-node.js/storage";
 import { Time } from "@project-chip/matter-node.js/time";
-import { getIntParameter, getParameter } from "./utils";
+import { getBoolParameter, getIntParameter, getParameter } from "./utils";
 import { HaService } from "./ha/ha.service";
 import { DeviceManager } from "./device-manager.service";
 
@@ -23,8 +23,8 @@ export class BridgeStorage implements BeforeApplicationShutdown {
   readonly storage: StorageBackendDisk;
 
   constructor() {
-    this.storageLocation = ".device-node";
-    this.storage = new StorageBackendDisk(this.storageLocation, getParameter("clearstorage", false));
+    this.storageLocation = getParameter("store", ".device-node");
+    this.storage = new StorageBackendDisk(this.storageLocation, getBoolParameter("clearstorage", false));
 
     this.logger.log(`Storage location: ${this.storageLocation} (Directory)`);
     this.logger.log('Use the parameter "-store NAME" to specify a different storage location, use -clearstorage to start with an empty storage.');
@@ -89,14 +89,14 @@ export class BridgeService implements OnModuleInit, BeforeApplicationShutdown {
 
     const deviceStorage = storageManager.createContext("Device");
 
-    const deviceName = "Matter Bridge device";
+    const deviceName = "HA Matter Bridge";
     const deviceType = DeviceTypes.AGGREGATOR.code;
     const vendorName = "matter-node.js";
     const passcode = getIntParameter("passcode") ?? deviceStorage.get("passcode", 20202021);
     const discriminator = getIntParameter("discriminator") ?? deviceStorage.get("discriminator", 3840);
     // product name / id and vendor id should match what is in the device certificate
     const vendorId = getIntParameter("vendorid") ?? deviceStorage.get("vendorid", 0xfff1);
-    const productName = `HA Bridge`;
+    const productName = `HA Matter Bridge`;
     // const productName = `node-matter OnOff-Bridge`;
     const productId = getIntParameter("productid") ?? deviceStorage.get("productid", 0x8000);
 
@@ -139,7 +139,7 @@ export class BridgeService implements OnModuleInit, BeforeApplicationShutdown {
         productName,
         productLabel: productName,
         productId,
-        serialNumber: `node-matter-${uniqueId}`,
+        serialNumber: `hmb-${uniqueId}`,
       },
     });
 
@@ -182,7 +182,7 @@ export class BridgeService implements OnModuleInit, BeforeApplicationShutdown {
       const pairingData = this.commissioningServer.getPairingCode();
       const { qrPairingCode, manualPairingCode } = pairingData;
 
-      this.logger.log(QrCode[qrPairingCode]);
+      this.logger.log(QrCode.encode(qrPairingCode));
       this.logger.log(`QR Code URL: https://project-chip.github.io/connectedhomeip/qrcode.html?data=${qrPairingCode}`);
       this.logger.log(`Manual pairing code: ${manualPairingCode}`);
     } else {

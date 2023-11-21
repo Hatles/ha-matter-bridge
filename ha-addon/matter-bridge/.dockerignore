@@ -1,0 +1,11 @@
+﻿Dockerfile
+.dockerignore
+.gitignore
+.git
+.nx
+.idea
+.vscode
+.device-node
+node_modules
+npm-debug.log
+dist
