@@ -289,7 +289,7 @@ export class Device implements ExampleApp {
 
             const { qrPairingCode, manualPairingCode } = pairingData;
 
-            console.log(QrCode.encode(qrPairingCode));
+            console.log(QrCode.get(qrPairingCode));
             this.logger.info(
                 `QR Code URL: https://project-chip.github.io/connectedhomeip/qrcode.html?data=${qrPairingCode}`,
             );
