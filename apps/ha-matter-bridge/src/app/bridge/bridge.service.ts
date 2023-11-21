@@ -182,7 +182,7 @@ export class BridgeService implements OnModuleInit, BeforeApplicationShutdown {
       const pairingData = this.commissioningServer.getPairingCode();
       const { qrPairingCode, manualPairingCode } = pairingData;
 
-      this.logger.log(QrCode.encode(qrPairingCode));
+      this.logger.log('QR Code: \r\n' + QrCode.get(qrPairingCode));
       this.logger.log(`QR Code URL: https://project-chip.github.io/connectedhomeip/qrcode.html?data=${qrPairingCode}`);
       this.logger.log(`Manual pairing code: ${manualPairingCode}`);
     } else {

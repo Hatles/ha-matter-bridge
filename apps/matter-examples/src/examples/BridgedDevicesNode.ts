@@ -216,7 +216,7 @@ export class BridgedDevice {
             const pairingData = commissioningServer.getPairingCode();
             const { qrPairingCode, manualPairingCode } = pairingData;
 
-            console.log(QrCode.encode(qrPairingCode));
+            console.log(QrCode.get(qrPairingCode));
             console.log(
                 `QR Code URL: https://project-chip.github.io/connectedhomeip/qrcode.html?data=${qrPairingCode}`,
             );
