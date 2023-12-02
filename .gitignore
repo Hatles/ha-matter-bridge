@@ -42,3 +42,5 @@ testem.log
 Thumbs.db
 
 .nx/cache
+/.controller-node/
+/.device-node/

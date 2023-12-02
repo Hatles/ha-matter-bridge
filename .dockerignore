@@ -6,6 +6,8 @@
 .idea
 .vscode
 .device-node
+.controller-node
 node_modules
 npm-debug.log
 dist
+tmp

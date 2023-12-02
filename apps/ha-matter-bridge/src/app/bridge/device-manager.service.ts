@@ -60,7 +60,11 @@ export class DeviceManager {
     //   });
     // }
 
-    // register entities
+
+    this.logger.debug(`Subscribing to HA entities for devices registrations`);
+    this.logger.debug(`Registering converters: ${this.converterIntances.map(c => c.type.name).join(", ")}`);
+
+      // register entities
     this.registeredEntities = [];
     this.ha.entities.entitiesRegistered.subscribe(entities => {
       Object.values(entities).forEach(entity => {
@@ -74,26 +78,30 @@ export class DeviceManager {
           if (converter) {
             this.logger.debug(`Registering converter for entity ${entity.entity_id} with converter ${converter.type.name}`);
 
-            const unregister = new Subject<void>();
-            const device = converter.instance.convert(
-              entity,
-              this.ha,
-              this.logger,
-              this.ha.entities.getEntityChanges(entity.entity_id).pipe(takeUntil(unregister)),
-              unregister.asObservable()
-            );
-            this.registeredEntities.push({ entity: entity, device: device, unregister: unregister});
+            try {
+                const unregister = new Subject<void>();
+                const device = converter.instance.convert(
+                    entity,
+                    this.ha,
+                    this.logger,
+                    this.ha.entities.getEntityChanges(entity.entity_id).pipe(takeUntil(unregister)),
+                    unregister.asObservable()
+                );
+                this.registeredEntities.push({ entity: entity, device: device, unregister: unregister});
 
-            const name = entity.attributes.friendly_name ?? entity.entity_id;
-            const hash = getHashFromEntityId(entity.entity_id);
-            const serial = `hmb-${uniqueId}-${hash}`; // max 32 characters
-            this.aggregator.addBridgedDevice(device, {
-              nodeLabel: name,
-              productName: name,
-              productLabel: name,
-              serialNumber: serial,
-              reachable: true,
-            });
+                const name = entity.attributes.friendly_name ?? entity.entity_id;
+                const hash = getHashFromEntityId(entity.entity_id);
+                const serial = `hmb-${uniqueId}-${hash}`; // max 32 characters
+                this.aggregator.addBridgedDevice(device, {
+                    nodeLabel: name,
+                    productName: name,
+                    productLabel: name,
+                    serialNumber: serial,
+                    reachable: true,
+                });
+            } catch (err) {
+              this.logger.error(`Error while registering converter for entity ${entity.entity_id} with converter ${converter.type.name}`, err);
+            }
           } else {
             this.logger.debug(`No converter found for entity ${entity.entity_id}`);
           }

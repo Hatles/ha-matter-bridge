@@ -1,6 +1,9 @@
 ﻿# docker build -t ha-matter-bridge:0.0.1 -t ha-matter-bridge:latest .
 # docker run -p 5540:5540/tcp -p 5540:5540/udp ha-matter-bridge
 
+# docker build -t 192.168.1.92:5000/ha-matter-bridge:0.0.3 .
+# docker push 192.168.1.92:5000/ha-matter-bridge:0.0.3
+
 ###################
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
@@ -66,5 +69,9 @@ WORKDIR /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist/apps/ha-matter-bridge ./dist
 
+# todo remove and use log level addon options for log
+ENV NODE_ENV development
+
 # Start the server using the production build
-CMD [ "node", "dist/main.js", "--store", "/data/.device-node" ]
+#CMD [ "node", "dist/main.js", "--store", "/data/.device-node" ]
+CMD ["sh", "-c", "node dist/main.js --config /data/options.json --store /data/.device-node --hassUrl http://supervisor --hassAccessToken $SUPERVISOR_TOKEN --addon true" ]

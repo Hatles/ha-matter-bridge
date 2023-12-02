@@ -108,8 +108,8 @@ export class LightEntityConverter implements EntityConverter {
       null,
       {
         colorMode: entity.attributes.color_mode === "xy" /*"hs"*/ ? ColorControl.ColorMode.CurrentHueAndCurrentSaturation : ColorControl.ColorMode.ColorTemperatureMireds,
-        currentHue: (entity.attributes.hs_color || [])[0] || 0,
-        currentSaturation: (entity.attributes.hs_color || [])[1] || 0,
+        currentHue: Math.min((entity.attributes.hs_color || [])[0] || 0, 254),
+        currentSaturation: Math.min((entity.attributes.hs_color || [])[1] || 0, 254),
 
         colorTemperatureMireds: entity.attributes.color_temp || entity.attributes.min_mireds,
         colorTempPhysicalMinMireds: entity.attributes.min_mireds,
@@ -230,7 +230,7 @@ export class LightEntityConverter implements EntityConverter {
           const hueSaturation = entity.attributes.hs_color;
           const currentHueSaturation = device.getCurrentHueSaturation();
           if (hueSaturation && currentHueSaturation.hue !== hueSaturation[0] && currentHueSaturation.saturation !== hueSaturation[1]) {
-            device.setCurrentHueSaturation({ hue: hueSaturation[0], saturation: hueSaturation[1] });
+            device.setCurrentHueSaturation({ hue: Math.min(hueSaturation[0], 254), saturation: Math.min(hueSaturation[1], 254) });
           }
         }
       );

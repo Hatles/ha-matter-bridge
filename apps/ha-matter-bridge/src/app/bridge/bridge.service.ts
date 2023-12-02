@@ -7,9 +7,10 @@ import { Aggregator, DeviceTypes } from "@project-chip/matter-node.js/device";
 import { QrCode } from "@project-chip/matter-node.js/schema";
 import { StorageBackendDisk, StorageManager } from "@project-chip/matter-node.js/storage";
 import { Time } from "@project-chip/matter-node.js/time";
-import { getBoolParameter, getIntParameter, getParameter } from "./utils";
 import { HaService } from "./ha/ha.service";
 import { DeviceManager } from "./device-manager.service";
+import { BridgeConfig } from "./bridge.config";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class BridgeStorage implements BeforeApplicationShutdown {
@@ -22,12 +23,12 @@ export class BridgeStorage implements BeforeApplicationShutdown {
   readonly storageLocation: string;
   readonly storage: StorageBackendDisk;
 
-  constructor() {
-    this.storageLocation = getParameter("store", ".device-node");
-    this.storage = new StorageBackendDisk(this.storageLocation, getBoolParameter("clearstorage", false));
+  constructor(private config: ConfigService<BridgeConfig>) {
+    this.storageLocation = this.config.get('store') || ".device-node";
+    this.storage = new StorageBackendDisk(this.storageLocation, this.config.get('clearstorage') || false);
 
     this.logger.log(`Storage location: ${this.storageLocation} (Directory)`);
-    this.logger.log('Use the parameter "-store NAME" to specify a different storage location, use -clearstorage to start with an empty storage.');
+    this.logger.log('Use the parameter "--store NAME" to specify a different storage location, use --clearstorage to start with an empty storage.');
   }
 
   async beforeApplicationShutdown(signal?: string) {
@@ -51,7 +52,7 @@ export class BridgeService implements OnModuleInit, BeforeApplicationShutdown {
   private ha: HaService;
   private deviceManager: DeviceManager;
 
-  constructor(storage: BridgeStorage, ha: HaService, deviceManager: DeviceManager) {
+  constructor(private config: ConfigService<BridgeConfig>,storage: BridgeStorage, ha: HaService, deviceManager: DeviceManager) {
     this.storage = storage;
     this.ha = ha;
     this.deviceManager = deviceManager;
@@ -92,18 +93,18 @@ export class BridgeService implements OnModuleInit, BeforeApplicationShutdown {
     const deviceName = "HA Matter Bridge";
     const deviceType = DeviceTypes.AGGREGATOR.code;
     const vendorName = "matter-node.js";
-    const passcode = getIntParameter("passcode") ?? deviceStorage.get("passcode", 20202021);
-    const discriminator = getIntParameter("discriminator") ?? deviceStorage.get("discriminator", 3840);
+    const passcode = this.config.get("passcode") ?? deviceStorage.get("passcode", 20202021);
+    const discriminator = this.config.get("discriminator") ?? deviceStorage.get("discriminator", 3840);
     // product name / id and vendor id should match what is in the device certificate
-    const vendorId = getIntParameter("vendorid") ?? deviceStorage.get("vendorid", 0xfff1);
+    const vendorId = this.config.get("vendorid") ?? deviceStorage.get("vendorid", 0xfff1);
     const productName = `HA Matter Bridge`;
     // const productName = `node-matter OnOff-Bridge`;
-    const productId = getIntParameter("productid") ?? deviceStorage.get("productid", 0x8000);
+    const productId = this.config.get("productid") ?? deviceStorage.get("productid", 0x8000);
 
-    const netInterface = getParameter("netinterface");
-    const port = getIntParameter("port") ?? 5540;
+    const netInterface = this.config.get("netinterface");
+    const port = this.config.get("port") ?? 5540;
 
-    const uniqueId = getIntParameter("uniqueid") ?? deviceStorage.get("uniqueid", Time.nowMs());
+    const uniqueId = this.config.get("uniqueid") ?? deviceStorage.get("uniqueid", Time.nowMs());
 
     deviceStorage.set("passcode", passcode);
     deviceStorage.set("discriminator", discriminator);

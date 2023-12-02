@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: Matter Bridge
-version: '0.0.2'
+version: '0.0.1'
 slug: matter-bridge
 description: A Matter Bridge add-on build with matter.js for Home Assistant
 url: 'https://github.com/hatles/ha-matter-bridge-addon'
@@ -24,6 +24,8 @@ schema:
     vendorid: int
     productid: int
 startup: services
+#hassio_api: true
+#hassio_role: manager
 homeassistant_api: true
 boot: auto
 ports:
@@ -32,6 +34,6 @@ ports:
 ports_description:
     5540/tcp: todo
     5540/udp: todo
-#image: "ghcr.io/home-assistant/{arch}-ha-matter-bridge-addon"
-#image: "{arch}-ha-matter-bridge-addon"
+#image: "ghcr.io/home-assistant/{arch}-addon-matter-bridge"
+#image: "ha-matter-bridge"
 #image: '192.168.1.92:5000/ha-matter-bridge'
