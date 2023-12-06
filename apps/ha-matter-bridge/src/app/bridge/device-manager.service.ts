@@ -9,7 +9,7 @@ import { ModuleRef } from "@nestjs/core";
 
 
 function getHashFromEntityId(entity_id: string, length: number = 8): string {
-  const hash = crypto.createHash('sha1');
+  const hash = crypto.createHash('sha1', {});
   return hash.update(entity_id).digest('hex').slice(0, length);
 }
 
@@ -19,13 +19,13 @@ export class DeviceManager {
 
   private readonly logger = new Logger(DeviceManager.name);
 
-  private registeredEntities: {entity: HassEntity, device: Device | ComposedDevice, unregister: Subject<void>}[];
+  private registeredEntities: {entity: HassEntity, device?: Device | ComposedDevice, unregister?: Subject<void>}[];
   private aggregator: Aggregator;
 
-  private readonly converterIntances: { type: Type<EntityConverter>, instance: EntityConverter }[];
+  private readonly converterInstances: { type: Type<EntityConverter>, instance: EntityConverter }[];
 
   constructor(private ha: HaService, @Inject(ENTITY_CONVERTERS) private converters: Type<EntityConverter>[], private moduleRef: ModuleRef) {
-    this.converterIntances = this.converters.map(converterType => ({
+    this.converterInstances = this.converters.map(converterType => ({
       type: converterType,
       instance: moduleRef.get(converterType)
     }));
@@ -62,19 +62,19 @@ export class DeviceManager {
 
 
     this.logger.debug(`Subscribing to HA entities for devices registrations`);
-    this.logger.debug(`Registering converters: ${this.converterIntances.map(c => c.type.name).join(", ")}`);
+    this.logger.debug(`Registering converters: ${this.converterInstances.map(c => c.type.name).join(", ")}`);
 
       // register entities
     this.registeredEntities = [];
     this.ha.entities.entitiesRegistered.subscribe(entities => {
       Object.values(entities).forEach(entity => {
-        const entityRegistration = this.registeredEntities.find(e => e.entity.entity_id === entity.entity_id)
+        const entityRegistration = this.registeredEntities.find(e => e.entity.entity_id === entity.entity_id && e.device)
 
         // register not already registered entities
         if (!entityRegistration) {
 
           // register new entity
-          const converter = this.converterIntances.find(c => c.instance.canConvert(entity));
+          const converter = this.converterInstances.find(c => c.instance.canConvert(entity));
           if (converter) {
             this.logger.debug(`Registering converter for entity ${entity.entity_id} with converter ${converter.type.name}`);
 
@@ -89,21 +89,24 @@ export class DeviceManager {
                 );
                 this.registeredEntities.push({ entity: entity, device: device, unregister: unregister});
 
-                const name = entity.attributes.friendly_name ?? entity.entity_id;
-                const hash = getHashFromEntityId(entity.entity_id);
+                const name = entity.attributes.friendly_name?.substring(0, 32) ?? entity.entity_id; // max 32 characters
+                const hash = getHashFromEntityId(entity.entity_id, 12);
                 const serial = `hmb-${uniqueId}-${hash}`; // max 32 characters
-                this.aggregator.addBridgedDevice(device, {
+                const deviceData = {
                     nodeLabel: name,
                     productName: name,
                     productLabel: name,
                     serialNumber: serial,
                     reachable: true,
-                });
+                };
+                this.aggregator.addBridgedDevice(device, deviceData);
+                this.logger.debug(`Registered entity ${entity.entity_id} with converter ${converter.type.name} and data: `, deviceData);
             } catch (err) {
               this.logger.error(`Error while registering converter for entity ${entity.entity_id} with converter ${converter.type.name}`, err);
             }
           } else {
             this.logger.debug(`No converter found for entity ${entity.entity_id}`);
+            this.registeredEntities.push({ entity: entity, device: null, unregister: null});
           }
         }
       });
@@ -112,17 +115,24 @@ export class DeviceManager {
     // unregister entities
     this.ha.entities.entitiesUnregistered.subscribe(entities => {
       Object.values(entities).forEach(entity => {
-        const entityRegistration = this.registeredEntities.find(e => e.entity.entity_id === entity.entity_id)
+        const entityRegistration = this.registeredEntities.find(e => e.entity.entity_id === entity.entity_id && e.device)
 
         if (entityRegistration) {
-          this.registeredEntities = this.registeredEntities.filter(e => e.entity.entity_id !== entity.entity_id);
+          // this.registeredEntities = this.registeredEntities.filter(e => e.entity.entity_id !== entity.entity_id);
           this.logger.log(`Removing entity ${entity.entity_id}`);
           entityRegistration.unregister.next();
           entityRegistration.unregister.complete();
+
+          entityRegistration.device = null;
+          entityRegistration.unregister = null;
         }
       });
     });
 
     return this.aggregator;
   }
+
+    getRegisteredEntities() {
+        return this.registeredEntities;
+    }
 }

@@ -5,7 +5,7 @@
     "scripts": {
         "ha-matter-bridge:serve:development": "nx run ha-matter-bridge:serve:development",
         "ha-matter-bridge:build:development": "nx run ha-matter-bridge:build:development",
-        "ha-matter-bridge-addon:build:development": "ls"
+        "ha-matter-bridge-addon:build:development": "build_addon.sh"
     },
     "private": true,
     "dependencies": {
@@ -16,6 +16,7 @@
         "@project-chip/matter-node.js": "^0.7.1",
         "@types/ws": "^8.5.9",
         "axios": "^1.0.0",
+        "hbs": "^4.2.0",
         "home-assistant-js-websocket": "^9.1.0",
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.0",

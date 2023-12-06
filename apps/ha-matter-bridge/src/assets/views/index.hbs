@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>HA Matter Bridge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<h1>{{ title }}</h1>
+<div>
+    <h2>QrCode:</h2>
+    <div>
+        <img id="barcode"
+             src="https://api.qrserver.com/v1/create-qr-code/?data={{qrPairingCode}}&amp;size=200x200"
+             alt=""
+             title="QrCode"
+             width="200"
+             height="200" />
+    </div>
+    <h3>QR Code URL: <a href="{{qrCodeUrl}}">{{qrCodeUrl}}</a></h3>
+    <h3>Manual pairing code: {{manualPairingCode}}</h3>
+    <div>Commissioned: {{commissioned}} (<a href="/factory-reset">RESET</a>)</div>
+
+    <div>
+        <h3>Devices</h3>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Id</th>
+                <th>Serial</th>
+                <th>Type</th>
+                <th>Registered</th>
+            </tr>
+            {{#each devices as |device|}}
+                <tr>
+                    <td>{{device.name}}</td>
+                    <td>{{device.id}}</td>
+                    <td>{{device.serial}}</td>
+                    <td>{{device.type}}</td>
+                    <td>{{device.registered}}</td>
+                </tr>
+            {{/each}}
+        </table>
+    </div>
+</div>
+</body>
+
+</html>

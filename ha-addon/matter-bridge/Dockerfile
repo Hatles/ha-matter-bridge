@@ -1,11 +1,11 @@
 ﻿# docker build --no-cache -t ha-matter-bridge-addon .
 # docker run --rm -p 5540:5540/tcp -p 5540:5540/udp ha-matter-bridge-addon
 
-#ARG BUILD_FROM
-#FROM $BUILD_FROM
+ARG BUILD_FROM
+FROM $BUILD_FROM
 
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base
-FROM ghcr.io/home-assistant/amd64-base
+#ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base
+#FROM ghcr.io/home-assistant/amd64-base
 
 # install node and npm
 ARG NODE_VERSION="18.18.2-r0"
@@ -16,6 +16,8 @@ RUN apk update && apk add nodejs="$NODE_VERSION" npm="$NPM_VERSION" icu-data-ful
 RUN node -v
 RUN npm -v
 
+# expose web interface port
+EXPOSE 3000
 # expose ports in both protocoles
 EXPOSE 5540/tcp
 EXPOSE 5540/udp

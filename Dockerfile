@@ -60,6 +60,9 @@ USER node
 
 FROM node:18-alpine As production
 
+# expose web interface port
+EXPOSE 3000
+# expose matter port
 EXPOSE 5540/tcp
 EXPOSE 5540/udp
 
@@ -73,5 +76,5 @@ COPY --chown=node:node --from=build /usr/src/app/dist/apps/ha-matter-bridge ./di
 ENV NODE_ENV development
 
 # Start the server using the production build
-#CMD [ "node", "dist/main.js", "--store", "/data/.device-node" ]
-CMD ["sh", "-c", "node dist/main.js --config /data/options.json --store /data/.device-node --hassUrl http://supervisor --hassAccessToken $SUPERVISOR_TOKEN --addon true" ]
+CMD [ "node", "dist/main.js" ]
+#CMD ["sh", "-c", "node dist/main.js --config /data/options.json --store /data/.device-node --hassUrl http://supervisor --hassAccessToken $SUPERVISOR_TOKEN --addon true" ]
